@@ -1,0 +1,38 @@
+{
+  "name": "gael",
+  "version": "1.0.0",
+  "description": "Analyse de relevés bancaires",
+  "main": "electron/main.js",
+  "author": "Seune Ngom",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dir": "electron-builder --mac --dir"
+  },
+  "build": {
+    "appId": "fr.quasarzero.gael",
+    "productName": "Gael",
+    "mac": {
+      "category": "public.app-category.finance",
+      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }]
+    },
+    "dmg": {
+      "title": "Gael ${version}",
+      "window": { "width": 540, "height": 380 }
+    },
+    "files": [
+      "electron/**/*"
+    ],
+    "extraResources": [
+      { "from": "docker-compose.yml", "to": "docker-compose.yml" },
+      { "from": "backend", "to": "backend" },
+      { "from": "parser", "to": "parser" },
+      { "from": "frontend", "to": "frontend" }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3"
+  }
+}

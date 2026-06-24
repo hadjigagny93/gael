@@ -1,0 +1,164 @@
+[
+  {
+    "name": "PRET A MANGER",
+    "description": null,
+    "url": null,
+    "color": "#ef4444"
+  },
+  {
+    "name": "apple",
+    "description": null,
+    "url": null,
+    "color": "#10b981"
+  },
+  {
+    "name": "basic-fit",
+    "description": null,
+    "url": null,
+    "color": "#ec4899"
+  },
+  {
+    "name": "boucherie",
+    "description": null,
+    "url": null,
+    "color": "#6366f1"
+  },
+  {
+    "name": "casino",
+    "description": null,
+    "url": null,
+    "color": "#ec4899"
+  },
+  {
+    "name": "cerise-et-potiro",
+    "description": null,
+    "url": "https://www.cerise-et-potiron.fr/store/neuville/",
+    "color": "#6366f1"
+  },
+  {
+    "name": "cigalle-des-mers",
+    "description": "Poissoneries",
+    "url": "https://cigaledesmers.fr/poissonnerie-neuville-sur-saone/",
+    "color": "#ec4899"
+  },
+  {
+    "name": "construction",
+    "description": null,
+    "url": null,
+    "color": "#ef4444"
+  },
+  {
+    "name": "courses",
+    "description": null,
+    "url": null,
+    "color": "#8b5cf6"
+  },
+  {
+    "name": "découvert",
+    "description": null,
+    "url": null,
+    "color": "#6366f1"
+  },
+  {
+    "name": "eats",
+    "description": null,
+    "url": "https://www.ubereats.com/fr?srsltid=AfmBOoonXk_-NYJr77jwp6VqutCJSY9ohlfAyKhNja6fkhk200gU_nl4",
+    "color": "#ef4444"
+  },
+  {
+    "name": "fnac",
+    "description": null,
+    "url": null,
+    "color": "#f59e0b"
+  },
+  {
+    "name": "ghost",
+    "description": null,
+    "url": "https://ghost.org/",
+    "color": "#6366f1"
+  },
+  {
+    "name": "github",
+    "description": null,
+    "url": "https://github.com/?locale=fr-fr",
+    "color": "#ec4899"
+  },
+  {
+    "name": "house",
+    "description": null,
+    "url": null,
+    "color": "#10b981"
+  },
+  {
+    "name": "intermarche",
+    "description": null,
+    "url": null,
+    "color": "#ec4899"
+  },
+  {
+    "name": "le-fournil",
+    "description": null,
+    "url": null,
+    "color": "#14b8a6"
+  },
+  {
+    "name": "monoprix",
+    "description": null,
+    "url": "https://www.monoprix.fr/",
+    "color": "#f59e0b"
+  },
+  {
+    "name": "ratp",
+    "description": null,
+    "url": "https://www.ratp.fr/",
+    "color": "#6366f1"
+  },
+  {
+    "name": "salaire",
+    "description": null,
+    "url": null,
+    "color": "#8b5cf6"
+  },
+  {
+    "name": "sendwave",
+    "description": "transfert",
+    "url": "https://www.sendwave.com/fr",
+    "color": "#6366f1"
+  },
+  {
+    "name": "service-affinite",
+    "description": null,
+    "url": null,
+    "color": "#10b981"
+  },
+  {
+    "name": "service-esprit-libre",
+    "description": null,
+    "url": null,
+    "color": "#f59e0b"
+  },
+  {
+    "name": "sncf",
+    "description": null,
+    "url": "https://www.sncf-connect.com/",
+    "color": "#8b5cf6"
+  },
+  {
+    "name": "tcl",
+    "description": null,
+    "url": null,
+    "color": "#f59e0b"
+  },
+  {
+    "name": "telephonie",
+    "description": null,
+    "url": null,
+    "color": "#f59e0b"
+  },
+  {
+    "name": "uber",
+    "description": "taxi,deplacemen",
+    "url": "https://www.uber.com/fr/fr/",
+    "color": "#ec4899"
+  }
+]

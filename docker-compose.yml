@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gael
+      POSTGRES_PASSWORD: gael
+      POSTGRES_DB: gael
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gael"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  parser:
+    build: ./parser
+    volumes:
+      - ./parser:/app
+      - ./uploads:/uploads
+    environment:
+      UPLOADS_DIR: /uploads
+    ports:
+      - "8001:8001"
+
+  api:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+      - ./uploads:/uploads
+    environment:
+      DATABASE_URL: postgresql://gael:gael@postgres:5432/gael
+      UPLOADS_DIR: /uploads
+      PARSER_URL: http://parser:8001
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      parser:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
