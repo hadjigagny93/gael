@@ -214,132 +214,179 @@ export default function TransactionsPage() {
     : []
 
   return (
-    <div className="flex h-[calc(100vh-7.5rem)] gap-4 overflow-hidden">
-      {/* Table */}
-      <div className={`flex flex-col gap-3 min-h-0 transition-all ${selected ? 'w-1/2' : 'w-full'}`}>
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      {/* Main list column */}
+      <div className={`flex flex-col min-h-0 transition-all duration-300 ${selected ? 'w-1/2' : 'w-full'}`}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between flex-shrink-0">
-          <div>
-            <h1 className="text-2xl font-bold">Transactions</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{visible.length} transaction{visible.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
+        {/* Sticky top bar */}
+        <div className="flex-shrink-0 px-6 pt-6 pb-4 space-y-4">
 
-        {/* Tag chips */}
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 flex-shrink-0">
-            {[...allTags].sort((a, b) => a.name.localeCompare(b.name)).map(tag => {
-              const isActiveFilter = tagFilter === tag.id
-              const willTag = checkedIds.size > 0
-              return (
-                <button
-                  key={tag.id}
-                  onClick={() => {
-                    if (willTag) {
-                      // apply tag to all checked transactions
-                      const ids = [...checkedIds]
-                      Promise.all(ids.map(txId => {
-                        const tx = transactions.find(t => t.id === txId)
-                        if (!tx) return
-                        const existing = tx.tags.map(t => t.id)
-                        if (existing.includes(tag.id)) return
-                        const ancestors = getAncestors(allTags, tag.id).filter(x => !existing.includes(x))
-                        return api.patch(`/transactions/${txId}/tags`, [...existing, ...ancestors, tag.id])
-                      })).then(() => { qc.invalidateQueries({ queryKey: ['transactions'] }); setCheckedIds(new Set()) })
-                    } else {
-                      setTagFilter(isActiveFilter ? null : tag.id)
-                    }
-                  }}
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium border transition-all ${
-                    isActiveFilter
-                      ? 'opacity-100 shadow-sm scale-105'
-                      : willTag
-                      ? 'opacity-90 hover:scale-105 hover:shadow-sm'
-                      : 'opacity-60 hover:opacity-100'
-                  }`}
-                  style={{
-                    borderColor: 'hsl(var(--border))',
-                    color: isActiveFilter ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                    background: isActiveFilter ? 'hsl(var(--foreground) / 0.08)' : 'transparent',
-                  }}
-                  title={willTag ? `Taguer la sélection avec "${tag.name}"` : `Filtrer par "${tag.name}"`}
-                >
-                  {tag.parent_id && <span className="opacity-50">{allTags.find(t => t.id === tag.parent_id)?.name} / </span>}
-                  {tag.name}
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">Transactions</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {visible.length} résultat{visible.length !== 1 ? 's' : ''}
+                {transactions.length !== visible.length && ` sur ${transactions.length}`}
+              </p>
+            </div>
+            {checkedIds.size > 0 && (
+              <div className="flex items-center gap-2 bg-primary/8 border border-primary/20 rounded-xl px-3 py-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-sm font-medium text-primary">{checkedIds.size} sélectionnée{checkedIds.size > 1 ? 's' : ''}</span>
+                <button onClick={() => setCheckedIds(new Set())} className="text-primary/50 hover:text-primary ml-1 transition-colors">
+                  <X className="h-3.5 w-3.5" />
                 </button>
-              )
-            })}
-            {tagFilter && (
-              <button onClick={() => setTagFilter(null)} className="rounded-full px-2 py-0.5 text-xs text-muted-foreground border hover:bg-muted flex items-center gap-1">
-                <X className="h-3 w-3" /> Effacer filtre
+              </div>
+            )}
+          </div>
+
+          {/* Search bar */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input
+                placeholder="Rechercher une transaction…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 h-10 bg-muted/50 border-transparent focus:border-border focus:bg-card transition-all rounded-xl"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            {visible.length > 0 && (
+              <button
+                onClick={toggleAll}
+                className="flex-shrink-0 h-10 text-sm text-muted-foreground hover:text-foreground border border-border/60 rounded-xl px-4 transition-all hover:bg-muted/50 whitespace-nowrap"
+              >
+                {allChecked ? 'Désélectionner' : search || tagFilter ? `Sélectionner les ${visible.length}` : 'Tout sélectionner'}
               </button>
             )}
           </div>
-        )}
 
-        {/* Search + bulk bar */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par libellé ou date…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          {checkedIds.size > 0 && (
-            <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg px-3 py-1.5 flex-shrink-0">
-              <span className="text-sm font-medium text-primary">{checkedIds.size} sélectionnée{checkedIds.size > 1 ? 's' : ''}</span>
-              <button onClick={() => setCheckedIds(new Set())} className="text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
+          {/* Tag chips */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {[...allTags].sort((a, b) => a.name.localeCompare(b.name)).map(tag => {
+                const isActiveFilter = tagFilter === tag.id
+                const willTag = checkedIds.size > 0
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => {
+                      if (willTag) {
+                        const ids = [...checkedIds]
+                        Promise.all(ids.map(txId => {
+                          const tx = transactions.find(t => t.id === txId)
+                          if (!tx) return
+                          const existing = tx.tags.map(t => t.id)
+                          if (existing.includes(tag.id)) return
+                          const ancestors = getAncestors(allTags, tag.id).filter(x => !existing.includes(x))
+                          return api.patch(`/transactions/${txId}/tags`, [...existing, ...ancestors, tag.id])
+                        })).then(() => { qc.invalidateQueries({ queryKey: ['transactions'] }); setCheckedIds(new Set()) })
+                      } else {
+                        setTagFilter(isActiveFilter ? null : tag.id)
+                      }
+                    }}
+                    title={willTag ? `Taguer la sélection avec "${tag.name}"` : `Filtrer par "${tag.name}"`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
+                      isActiveFilter
+                        ? 'bg-foreground text-background border-foreground shadow-sm'
+                        : willTag
+                        ? 'border-primary/40 text-primary bg-primary/5 hover:bg-primary/10'
+                        : 'border-border/60 text-muted-foreground hover:text-foreground hover:border-border'
+                    }`}
+                  >
+                    {tag.parent_id && <span className="opacity-50">{allTags.find(t => t.id === tag.parent_id)?.name} / </span>}
+                    {tag.name}
+                  </button>
+                )
+              })}
+              {tagFilter && (
+                <button onClick={() => setTagFilter(null)} className="rounded-full px-2.5 py-1 text-xs text-muted-foreground border border-border/60 hover:bg-muted flex items-center gap-1 transition-all">
+                  <X className="h-3 w-3" /> Effacer
+                </button>
+              )}
             </div>
           )}
         </div>
 
         {/* List */}
         {isLoading ? (
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
+          <div className="px-6 space-y-2">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="h-14 rounded-xl bg-muted/60 animate-pulse" style={{ opacity: 1 - i * 0.1 }} />
+            ))}
           </div>
         ) : visible.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-muted-foreground">
-            <TagIcon className="h-10 w-10 mb-3 opacity-40" />
-            <p className="font-medium">{search ? 'Aucun résultat' : 'Aucune transaction'}</p>
+          <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
+            <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+              <TagIcon className="h-5 w-5 opacity-40" />
+            </div>
+            <p className="font-medium text-sm">{search ? 'Aucun résultat' : 'Aucune transaction'}</p>
+            {search && <p className="text-xs mt-1 opacity-60">Essayez un autre terme de recherche</p>}
           </div>
         ) : (
-          <div className="overflow-auto flex-1">
-            <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50">
+          <div className="overflow-auto flex-1 px-6 pb-6">
+            <div className="rounded-2xl border border-border/50 overflow-hidden bg-card shadow-sm">
               {visible.map((tx, idx) => {
                 const checked = checkedIds.has(tx.id)
                 const isSelected = selected?.id === tx.id
                 const isDebit = tx.debit != null
                 const amount = isDebit ? tx.debit : tx.credit
-                const amountColor = isDebit ? 'text-red-500' : 'text-blue-500'
                 const fmtAmt = amount == null ? '—'
                   : `${isDebit ? '−' : '+'}${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2 }).format(parseFloat(amount))} €`
                 const color = avatarColor(tx.label)
                 const initial = tx.label.trim()[0]?.toUpperCase() ?? '?'
-                const topTag = tx.tags?.[0]?.name ?? null
                 return (
                   <div key={tx.id}
                     onDoubleClick={() => setSelected(isSelected ? null : tx)}
-                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${idx < visible.length - 1 ? 'border-b border-border/40' : ''} ${isSelected ? 'bg-primary/10' : checked ? 'bg-muted/60' : 'hover:bg-muted/40'}`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-100 ${
+                      idx < visible.length - 1 ? 'border-b border-border/30' : ''
+                    } ${
+                      isSelected
+                        ? 'bg-primary/6'
+                        : checked
+                        ? 'bg-primary/4'
+                        : 'hover:bg-muted/40'
+                    }`}
                   >
-                    <input type="checkbox" checked={checked} onChange={() => {}} onClick={e => toggleCheck(tx.id, e as unknown as React.MouseEvent)} className="accent-primary flex-shrink-0 opacity-40 hover:opacity-100 transition-opacity" />
-                    <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold select-none" style={{ background: color }}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {}}
+                      onClick={e => toggleCheck(tx.id, e as unknown as React.MouseEvent)}
+                      className="accent-primary flex-shrink-0 w-3.5 h-3.5 cursor-pointer"
+                    />
+                    <div
+                      className="h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold select-none shadow-sm"
+                      style={{ background: color }}
+                    >
                       {initial}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate leading-tight text-foreground">{tx.label}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-muted-foreground">{new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                        {topTag && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{topTag}</span>}
-                      </div>
+                      <p className="text-sm font-medium truncate text-foreground leading-snug">{tx.label}</p>
+                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 tabular-nums">
+                        {new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </p>
                     </div>
-                    <p className={`font-semibold text-sm tabular-nums flex-shrink-0 ${amountColor}`}>{fmtAmt}</p>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {tx.tags?.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          {tx.tags.map(tag => (
+                            <span key={tag.id} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium border border-border/40">
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className={`font-semibold text-sm tabular-nums min-w-[90px] text-right ${isDebit ? 'text-red-500' : 'text-blue-500'}`}>
+                        {fmtAmt}
+                      </p>
+                    </div>
                   </div>
                 )
               })}
@@ -350,71 +397,87 @@ export default function TransactionsPage() {
 
       {/* Detail panel */}
       {selected && (
-        <div className="w-1/2 flex flex-col gap-4 overflow-hidden border-l pl-4">
-          <div className="flex items-start justify-between flex-shrink-0">
-            <div>
-              <p className="text-xs text-muted-foreground">{new Date(selected.date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <h2 className="font-semibold mt-0.5 leading-tight">{selected.label}</h2>
-              <div className="flex items-center gap-2 mt-2">
-                {editing ? (
-                  <>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">Débit</span>
-                      <Input value={editDebit} onChange={e => setEditDebit(e.target.value)} className="w-24 h-7 text-sm" placeholder="0.00" />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">Crédit</span>
-                      <Input value={editCredit} onChange={e => setEditCredit(e.target.value)} className="w-24 h-7 text-sm" placeholder="0.00" />
-                    </div>
-                    <button onClick={() => update.mutate({ id: selected.id, debit: editDebit, credit: editCredit })} className="text-green-600 hover:text-green-700 p-1">
-                      <Check className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground p-1">
-                      <X className="h-4 w-4" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {selected.debit && <span className="text-red-500 font-mono font-semibold">{fmt(selected.debit)}</span>}
-                    {selected.credit && <span className="text-green-600 font-mono font-semibold">{fmt(selected.credit)}</span>}
-                    <button onClick={() => setEditing(true)} className="text-muted-foreground hover:text-foreground p-1 ml-1">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </>
-                )}
-              </div>
+        <div className="w-1/2 flex flex-col gap-0 overflow-hidden border-l border-border/50 bg-card/50">
+          {/* Panel header */}
+          <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-border/40">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-xs text-muted-foreground capitalize">
+                {new Date(selected.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+              <button onClick={() => setSelected(null)} className="text-muted-foreground hover:text-foreground p-1 -mr-1 rounded-lg hover:bg-muted transition-all">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <button onClick={() => setSelected(null)} className="text-muted-foreground hover:text-foreground p-1">
-              <X className="h-4 w-4" />
-            </button>
+            <h2 className="font-semibold text-base leading-snug text-foreground pr-4">{selected.label}</h2>
+            <div className="flex items-center gap-2 mt-3">
+              {editing ? (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">Débit</span>
+                    <Input value={editDebit} onChange={e => setEditDebit(e.target.value)} className="w-24 h-7 text-sm" placeholder="0.00" />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">Crédit</span>
+                    <Input value={editCredit} onChange={e => setEditCredit(e.target.value)} className="w-24 h-7 text-sm" placeholder="0.00" />
+                  </div>
+                  <button onClick={() => update.mutate({ id: selected.id, debit: editDebit, credit: editCredit })} className="text-emerald-500 hover:text-emerald-600 p-1 transition-colors">
+                    <Check className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
+                    <X className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  {selected.debit && (
+                    <span className="text-red-500 font-semibold text-lg tabular-nums">
+                      −{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(parseFloat(selected.debit))}
+                    </span>
+                  )}
+                  {selected.credit && (
+                    <span className="text-blue-500 font-semibold text-lg tabular-nums">
+                      +{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(parseFloat(selected.credit))}
+                    </span>
+                  )}
+                  <button onClick={() => setEditing(true)} className="text-muted-foreground/50 hover:text-muted-foreground p-1 ml-1 transition-colors">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap items-center flex-shrink-0">
-            {selected.tags.map(tag => (
-              <Badge key={tag.id} className="flex items-center gap-1 pr-1">
-                {tag.name}
-                <button onClick={() => setTags.mutate({ id: selected.id, tag_ids: selected.tags.filter(t => t.id !== tag.id).map(t => t.id) })} className="ml-0.5 hover:text-white/70">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-            <TagPicker
-              allTags={allTags}
-              selectedIds={selected.tags.map(t => t.id)}
-              onChange={ids => setTags.mutate({ id: selected.id, tag_ids: ids })}
+          {/* Tags section */}
+          <div className="flex-shrink-0 px-6 py-4 border-b border-border/40">
+            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest mb-2.5">Tags</p>
+            <div className="flex gap-1.5 flex-wrap items-center">
+              {selected.tags.map(tag => (
+                <span key={tag.id} className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-muted border border-border/50 text-foreground">
+                  {tag.name}
+                  <button
+                    onClick={() => setTags.mutate({ id: selected.id, tag_ids: selected.tags.filter(t => t.id !== tag.id).map(t => t.id) })}
+                    className="text-muted-foreground hover:text-foreground ml-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              <TagPicker
+                allTags={allTags}
+                selectedIds={selected.tags.map(t => t.id)}
+                onChange={ids => setTags.mutate({ id: selected.id, tag_ids: ids })}
+              />
+            </div>
+          </div>
+
+          {/* PDF */}
+          <div className="flex-1 min-h-0 px-6 py-4">
+            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest mb-2.5">Document source</p>
+            <iframe
+              src={`${API}/statements/${selected.statement_id}/pdf`}
+              className="w-full h-full rounded-xl border border-border/50 shadow-sm"
+              title="PDF source"
             />
-          </div>
-
-          {!selected.verified && (
-            <Button size="sm" variant="outline" className="w-fit flex-shrink-0"
-              onClick={() => verify.mutate(selected.id)} disabled={verify.isPending}>
-              Marquer comme catégorisée
-            </Button>
-          )}
-
-          <div className="flex-1 min-h-0">
-            <p className="text-xs font-medium text-muted-foreground mb-2">PDF source</p>
-            <iframe src={`${API}/statements/${selected.statement_id}/pdf`} className="w-full h-full rounded-xl border" title="PDF source" />
           </div>
         </div>
       )}

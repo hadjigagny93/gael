@@ -29,39 +29,46 @@ export default function App() {
       <div className="min-h-screen flex flex-col bg-background">
 
         {/* Top navbar */}
-        <header className="h-14 border-b bg-card flex items-center px-6 flex-shrink-0">
+        <header className="h-16 border-b border-border/60 bg-card/80 backdrop-blur-md flex items-center px-6 flex-shrink-0 sticky top-0 z-50">
           {/* Logo */}
-          <div className="w-32 flex-shrink-0">
-            <span className="text-lg font-bold tracking-tight">gael</span>
+          <div className="w-36 flex-shrink-0 flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+              <span className="text-[11px] font-bold text-white tracking-tight">G</span>
+            </div>
+            <span className="text-sm font-semibold tracking-tight text-foreground">gael</span>
           </div>
 
           {/* Nav — centered */}
-          <nav className="flex-1 flex items-center justify-center gap-1">
+          <nav className="flex-1 flex items-center justify-center gap-0.5">
             {nav.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={to === '/'}
-                title={label}
                 className={({ isActive }) =>
-                  `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                  `flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`
                 }
               >
-                <Icon className="h-4 w-4" />
+                {({ isActive }) => (
+                  <>
+                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                    <span>{label}</span>
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
 
           {/* Right actions */}
-          <div className="w-32 flex-shrink-0 flex justify-end">
+          <div className="w-36 flex-shrink-0 flex justify-end">
             <button
               onClick={toggle}
               title={dark ? 'Mode clair' : 'Mode sombre'}
-              className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
             >
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
@@ -69,7 +76,7 @@ export default function App() {
         </header>
 
         {/* Page content */}
-        <main className="overflow-auto p-8" style={{ height: 'calc(100vh - 3.5rem)' }}>
+        <main className="overflow-auto" style={{ height: 'calc(100vh - 4rem)' }}>
           <Routes>
             <Route path="/" element={<BanksPage />} />
             <Route path="/import" element={<ImportPage />} />
